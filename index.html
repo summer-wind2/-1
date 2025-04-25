@@ -360,8 +360,8 @@
                 } else {
                     const contentType = response.headers.get('content-type');
                     if (contentType && contentType.includes('application/json')) {
-                        const error = await response.json();
-                        throw new Error(error.error || `转换失败 (状态码: ${response.status})`);
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || `转换失败 (状态码: ${response.status})`);
                     } else {
                         const errorText = await response.text();
                         throw new Error(errorText || `转换失败，服务器返回状态码 ${response.status}`);
