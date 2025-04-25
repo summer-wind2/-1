@@ -368,7 +368,14 @@
                     }
                 }
             } catch (error) {
-                status.textContent = `错误：${error.message}`;
+                console.error('捕获到的错误对象:', error);
+                let errorMessage = '转换时发生未知错误';
+                if (error instanceof Error) {
+                    errorMessage = error.message;
+                } else if (typeof error === 'string') {
+                    errorMessage = error;
+                }
+                status.textContent = `错误：${errorMessage}`;
                 status.classList.add('error');
             } finally {
                 loadingWrapper.style.display = 'none';
