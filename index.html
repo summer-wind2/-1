@@ -358,8 +358,14 @@
                     status.textContent = '转换成功！文件已开始下载。';
                     status.classList.add('success');
                 } else {
-                    const error = await response.json();
-                    throw new Error(error.error || '转换失败');
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        const error = await response.json();
+                        throw new Error(error.error || `转换失败 (状态码: ${response.status})`);
+                    } else {
+                        const errorText = await response.text();
+                        throw new Error(errorText || `转换失败，服务器返回状态码 ${response.status}`);
+                    }
                 }
             } catch (error) {
                 status.textContent = `错误：${error.message}`;
