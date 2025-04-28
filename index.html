@@ -323,6 +323,8 @@
             }
         }
 
+        const API_URL = 'http://localhost:5000/convert'; // 修改为你的后端地址
+
         convertBtn.addEventListener('click', async () => {
             const file = fileInput.files[0] || document.querySelector('input[type="file"]').files[0];
             if (!file) {
@@ -340,7 +342,7 @@
             status.classList.remove('error', 'success');
 
             try {
-                const response = await fetch('/convert', {
+                const response = await fetch(API_URL, {
                     method: 'POST',
                     body: formData
                 });
@@ -368,7 +370,6 @@
                     }
                 }
             } catch (error) {
-                console.error('捕获到的错误对象:', error);
                 let errorMessage = '转换时发生未知错误';
                 if (error instanceof Error) {
                     errorMessage = error.message;
