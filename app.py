@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, send_file, jsonify
+from flask_cors import CORS
 import os
 import time
 import fitz  # PyMuPDF
@@ -12,9 +13,9 @@ from werkzeug.utils import secure_filename
 import shutil
 
 app = Flask(__name__)
+CORS(app)
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max-limit
-app.config['SERVER_NAME'] = '4renpk.my'  # 添加域名配置
 
 # 确保上传文件夹存在
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
@@ -142,12 +143,10 @@ def convert_pdf_to_docx(pdf_path, docx_path):
     except Exception as e:
         raise Exception(f"转换失败: {str(e)}")
 
-@app.route('/', subdomain='www')
 @app.route('/')
 def index():
     return render_template('index.html')
 
-@app.route('/convert', methods=['POST'], subdomain='www')
 @app.route('/convert', methods=['POST'])
 def convert_file():
     try:
@@ -242,23 +241,10 @@ def not_found_error(error):
 
 if __name__ == '__main__':
     try:
-        # 检查端口是否被占用
-        import socket
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        result = sock.connect_ex(('127.0.0.1', 80))  # 改用80端口
-        if result == 0:
-            print("警告: 端口80已被占用，尝试使用其他端口...")
-            # 尝试其他端口
-            for port in [8080, 8000, 3000]:
-                result = sock.connect_ex(('127.0.0.1', port))
-                if result != 0:
-                    print(f"使用端口 {port}")
-                    app.run(host='0.0.0.0', port=port, debug=True)
-                    break
-        else:
-            print("启动服务器在端口80...")
-            app.run(host='0.0.0.0', port=80, debug=True)
-        sock.close()
+        # 修改启动代码，固定使用5000端口
+        print("启动服务器在端口5000...")
+        app.run(host='0.0.0.0', port=5000, debug=False)  # 生产环境关闭debug
     except Exception as e:
         print(f"启动服务器时出错: {str(e)}")
         print("请确保您有足够的权限运行服务器，并且没有其他程序占用端口。") 
+   
