@@ -13,7 +13,13 @@ from werkzeug.utils import secure_filename
 import shutil
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={
+    r"/*": {
+        "origins": ["http://4renpk.my", "https://4renpk.my", "http://www.4renpk.my", "https://www.4renpk.my"],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type"]
+    }
+})
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max-limit
 
@@ -147,8 +153,11 @@ def convert_pdf_to_docx(pdf_path, docx_path):
 def index():
     return render_template('index.html')
 
-@app.route('/convert', methods=['POST'])
+@app.route('/convert', methods=['POST', 'OPTIONS'])
 def convert_file():
+    if request.method == 'OPTIONS':
+        return '', 204  # 处理预检请求
+    
     try:
         if 'file' not in request.files:
             return jsonify({'error': '没有找到文件'}), 400
@@ -241,9 +250,8 @@ def not_found_error(error):
 
 if __name__ == '__main__':
     try:
-        # 修改启动代码，固定使用5000端口
         print("启动服务器在端口5000...")
-        app.run(host='0.0.0.0', port=5000, debug=False)  # 生产环境关闭debug
+        app.run(host='0.0.0.0', port=5000, debug=False)
     except Exception as e:
         print(f"启动服务器时出错: {str(e)}")
         print("请确保您有足够的权限运行服务器，并且没有其他程序占用端口。") 
