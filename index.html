@@ -323,7 +323,9 @@
             }
         }
 
-        const API_URL = 'https://4renpk.my/convert';
+        const API_URL = window.location.hostname === 'localhost' 
+            ? 'http://localhost:5000/convert'
+            : `${window.location.protocol}//${window.location.hostname}/convert`;
 
         convertBtn.addEventListener('click', async () => {
             const file = fileInput.files[0] || document.querySelector('input[type="file"]').files[0];
@@ -344,7 +346,9 @@
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    body: formData
+                    body: formData,
+                    mode: 'cors',
+                    credentials: 'same-origin',
                 });
 
                 if (response.ok) {
@@ -371,10 +375,10 @@
                 }
             } catch (error) {
                 let errorMessage = '转换时发生未知错误';
-                if (error instanceof Error) {
+                if (error.message.includes('Failed to fetch')) {
+                    errorMessage = '无法连接到服务器，请确保服务正在运行';
+                } else if (error instanceof Error) {
                     errorMessage = error.message;
-                } else if (typeof error === 'string') {
-                    errorMessage = error;
                 }
                 status.textContent = `错误：${errorMessage}`;
                 status.classList.add('error');
