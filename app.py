@@ -13,13 +13,7 @@ from werkzeug.utils import secure_filename
 import shutil
 
 app = Flask(__name__)
-CORS(app, resources={
-    r"/*": {
-        "origins": ["http://4renpk.my", "https://4renpk.my", "http://www.4renpk.my", "https://www.4renpk.my"],
-        "methods": ["GET", "POST", "OPTIONS"],
-        "allow_headers": ["Content-Type"]
-    }
-})
+CORS(app, supports_credentials=True)  # 允许跨域
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max-limit
 
@@ -153,87 +147,53 @@ def convert_pdf_to_docx(pdf_path, docx_path):
 def index():
     return render_template('index.html')
 
-@app.route('/convert', methods=['POST', 'OPTIONS'])
+@app.route('/convert', methods=['POST'])
 def convert_file():
-    if request.method == 'OPTIONS':
-        return '', 204  # 处理预检请求
-    
-    try:
-        if 'file' not in request.files:
-            return jsonify({'error': '没有找到文件'}), 400
-        
-        file = request.files['file']
-        if file.filename == '':
-            return jsonify({'error': '没有选择文件'}), 400
-        
-        if not file or not allowed_file(file.filename):
-            return jsonify({'error': '不支持的文件类型'}), 400
+    if 'file' not in request.files:
+        return jsonify({'error': '没有找到文件'}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': '没有选择文件'}), 400
+    if not file or not allowed_file(file.filename):
+        return jsonify({'error': '不支持的文件类型'}), 400
 
-        # 使用时间戳生成唯一文件名
-        original_filename = secure_filename(file.filename)
-        unique_filename = generate_unique_filename(original_filename)
-        
-        # 创建临时工作目录
-        work_dir = os.path.join(app.config['UPLOAD_FOLDER'], str(int(time.time())))
-        os.makedirs(work_dir, exist_ok=True)
-        
-        try:
-            pdf_path = os.path.join(work_dir, unique_filename)
-            docx_filename = os.path.splitext(unique_filename)[0] + '.docx'
-            docx_path = os.path.join(work_dir, docx_filename)
-            
-            # 保存上传的PDF文件
-            file.save(pdf_path)
-            
-            # 验证PDF文件
-            if not verify_pdf(pdf_path):
-                raise Exception("无效的PDF文件")
-            
-            # 转换文件
-            convert_pdf_to_docx(pdf_path, docx_path)
-            
-            # 等待文件系统完成写入
-            time.sleep(0.5)
-            
-            if not os.path.exists(docx_path):
-                raise Exception("转换后的文件未找到")
-            
-            # 验证转换后的文件大小
-            if os.path.getsize(docx_path) == 0:
-                raise Exception("转换后的文件为空")
-                
-            # 复制文件到最终位置
-            final_docx_path = os.path.join(app.config['UPLOAD_FOLDER'], docx_filename)
-            shutil.copy2(docx_path, final_docx_path)
-            
-            # 返回转换后的文件
-            response = send_file(
-                final_docx_path,
-                as_attachment=True,
-                download_name=os.path.splitext(original_filename)[0] + '.docx',
-                mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-            )
-            
-            # 设置响应头，防止缓存
-            response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-            response.headers["Pragma"] = "no-cache"
-            response.headers["Expires"] = "0"
-            
-            return response
-            
-        except Exception as e:
-            return jsonify({'error': f'转换过程中出错: {str(e)}'}), 500
-            
-        finally:
-            # 清理临时文件和目录
-            try:
-                if os.path.exists(work_dir):
-                    shutil.rmtree(work_dir)
-            except:
-                pass
-            
+    original_filename = secure_filename(file.filename)
+    unique_filename = generate_unique_filename(original_filename)
+    work_dir = os.path.join(app.config['UPLOAD_FOLDER'], str(int(time.time())))
+    os.makedirs(work_dir, exist_ok=True)
+    try:
+        pdf_path = os.path.join(work_dir, unique_filename)
+        docx_filename = os.path.splitext(unique_filename)[0] + '.docx'
+        docx_path = os.path.join(work_dir, docx_filename)
+        file.save(pdf_path)
+        if not verify_pdf(pdf_path):
+            raise Exception("无效的PDF文件")
+        convert_pdf_to_docx(pdf_path, docx_path)
+        time.sleep(0.5)
+        if not os.path.exists(docx_path):
+            raise Exception("转换后的文件未找到")
+        if os.path.getsize(docx_path) == 0:
+            raise Exception("转换后的文件为空")
+        final_docx_path = os.path.join(app.config['UPLOAD_FOLDER'], docx_filename)
+        shutil.copy2(docx_path, final_docx_path)
+        response = send_file(
+            final_docx_path,
+            as_attachment=True,
+            download_name=os.path.splitext(original_filename)[0] + '.docx',
+            mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        )
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+        return response
     except Exception as e:
-        return jsonify({'error': f'服务器错误: {str(e)}'}), 500
+        return jsonify({'error': f'转换过程中出错: {str(e)}'}), 500
+    finally:
+        try:
+            if os.path.exists(work_dir):
+                shutil.rmtree(work_dir)
+        except:
+            pass
 
 # 添加错误处理器
 @app.errorhandler(413)
