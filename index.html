@@ -323,7 +323,7 @@
             }
         }
 
-        const API_URL = `${window.location.protocol}//${window.location.hostname}/convert`;
+        const API_URL = '/convert';
 
         convertBtn.addEventListener('click', async () => {
             const file = fileInput.files[0] || document.querySelector('input[type="file"]').files[0];
@@ -344,12 +344,7 @@
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    body: formData,
-                    mode: 'cors',
-                    credentials: 'same-origin',
-                    headers: {
-                        'Accept': 'application/json, application/octet-stream'
-                    }
+                    body: formData
                 });
 
                 if (response.ok) {
