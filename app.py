@@ -143,6 +143,10 @@ def convert_pdf_to_docx(pdf_path, docx_path):
     except Exception as e:
         raise Exception(f"转换失败: {str(e)}")
 
+@app.route('/hello')
+def index():
+    return 'word'
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -211,7 +215,7 @@ def not_found_error(error):
 if __name__ == '__main__':
     try:
         print("启动服务器在端口5000...")
-        app.run(host='0.0.0.0', port=5000, debug=False)
+        app.run(port=5000, debug=True)
     except Exception as e:
         print(f"启动服务器时出错: {str(e)}")
         print("请确保您有足够的权限运行服务器，并且没有其他程序占用端口。") 
