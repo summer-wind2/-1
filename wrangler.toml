@@ -1,0 +1,10 @@
+name = "pdf-converter"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+
+[site]
+bucket = "./public"
+
+[env.production]
+workers_dev = false
+route = "4renpk.my/*"
