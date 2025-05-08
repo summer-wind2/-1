@@ -1,4 +1,5 @@
 import { PDFDocument } from 'pdf-lib';
+import { convert } from 'pdf2docx';
 
 export async function onRequest(context) {
   // 处理 CORS
@@ -28,37 +29,11 @@ export async function onRequest(context) {
     const fileBuffer = await file.arrayBuffer();
     
     if (conversionType === 'pdf-to-word') {
-      // 使用 pdf-lib 提取文本内容
-      const pdfDoc = await PDFDocument.load(fileBuffer);
-      const pages = pdfDoc.getPages();
-      
-      // 提取所有页面的文本
-      let textContent = '';
-      for (let i = 0; i < pages.length; i++) {
-        const page = pages[i];
-        const { width, height } = page.getSize();
-        
-        // 这里需要添加文本提取逻辑
-        // 由于 pdf-lib 的限制，我们需要使用其他库来提取文本
-        // 建议使用 pdf.js 或 pdf-parse 等库
-        
-        textContent += `Page ${i + 1}\n`;
-      }
-      
-      // 创建 Word 文档内容
-      const docxContent = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-        <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
-          <w:body>
-            <w:p>
-              <w:r>
-                <w:t>${textContent}</w:t>
-              </w:r>
-            </w:p>
-          </w:body>
-        </w:document>`;
+      // 使用 pdf2docx 进行转换
+      const docxBuffer = await convert(fileBuffer);
       
       // 返回转换后的文档
-      return new Response(docxContent, {
+      return new Response(docxBuffer, {
         headers: {
           'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
           'Content-Disposition': `attachment; filename="converted.docx"`,
