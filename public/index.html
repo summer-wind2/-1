@@ -323,7 +323,7 @@
             }
         }
 
-        const API_URL = '/api/convert';
+        const API_BASE_URL = 'https://1-chi-dusky.vercel.app/';
 
         convertBtn.addEventListener('click', async () => {
             const file = fileInput.files[0] || document.querySelector('input[type="file"]').files[0];
@@ -342,7 +342,7 @@
             status.classList.remove('error', 'success');
 
             try {
-                const response = await fetch(API_URL, {
+                const response = await fetch(`${API_BASE_URL}/convert/pdf-to-word`, {
                     method: 'POST',
                     body: formData
                 });
