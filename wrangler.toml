@@ -1,0 +1,16 @@
+name = "pdf-to-word-converter"
+main = "app.py"
+compatibility_date = "2024-01-01"
+
+[build]
+command = "pip install -r requirements.txt"
+
+[vars]
+PYTHONPATH = "."
+
+[[rules]]
+type = "ESModule"
+globs = ["**/*.py"]
+
+[env.production]
+workers_dev = true 
