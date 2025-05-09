@@ -13,7 +13,7 @@ import {
 import axios from 'axios';
 
 // API URL配置
-const API_URL = 'http://192.168.1.3:5000/convert';
+const API_URL = 'https://1-git-main-zhangs-projects-5be5cd21.vercel.app//convert';
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 
 function App() {
