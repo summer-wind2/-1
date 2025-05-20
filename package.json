@@ -13,7 +13,8 @@ import {
 import axios from 'axios';
 
 // API URL配置
-const API_URL = '/convert';
+const API_URL = 'https://api.4renpk.my/convert';
+// /convert';
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 
 function App() {
