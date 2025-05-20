@@ -13,4 +13,8 @@ type = "ESModule"
 globs = ["**/*.py"]
 
 [env.production]
-workers_dev = true 
+workers_dev = false
+
+[[routes]]
+pattern = "4renpk.my/*"
+zone_id = "32de47583b6619039eeef111d4896fb0" 
